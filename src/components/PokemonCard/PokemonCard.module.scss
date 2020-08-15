@@ -1,0 +1,23 @@
+.root {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  margin: 16px;
+  padding: 16px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  &:hover {
+    border: 1px solid gray;
+  }
+}
+
+.img {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.label {
+  text-align: center;
+}
