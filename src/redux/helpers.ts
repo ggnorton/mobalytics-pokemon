@@ -1,0 +1,1 @@
+export const actionGenerator = (type: string, payload?: object) => ({ type, payload });
