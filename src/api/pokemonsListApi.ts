@@ -1,8 +1,12 @@
 import axios from 'axios'
-import {API_PREFIX} from "./constants";
+import {
+  API_PREFIX,
+  DEFAULT_LIMIT,
+  DEFAULT_OFFSET
+} from "./constants";
 
-export default function() {
-  let url = `${API_PREFIX}/pokemon?limit=24&offset=0`
-  return axios.get(url)
+export default function(url?: string | null) {
+  let actualUrl = url ? url : `${API_PREFIX}/pokemon?limit=${DEFAULT_LIMIT}&offset=${DEFAULT_OFFSET}`
+  return axios.get(actualUrl)
     .then(({data}) => data)
 }

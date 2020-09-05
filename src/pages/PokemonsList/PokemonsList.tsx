@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
 import cn from 'classnames'
 import style from './PokemonsList.module.scss'
@@ -6,19 +6,44 @@ import {actionFetchPokemonList} from "../../redux/pokemonsList/actions";
 import {RootState} from "../../redux/store";
 import PokemonCard from "../../components/PokemonCard/PokemonCard";
 
+const SCROLL_OFFSET = 100
+
 interface Props {
   className?: string;
 }
 
 const PokemonsList: React.FC<Props> = ({ className }) => {
   const dispatch = useDispatch()
+  const [isNextPageLoading, setIsNextPageLoading] = useState(false)
   const pokemonsList = useSelector((state: RootState) => state.pokemonsListReducer.pokemonsList)
   const pokemonsListIsLoading = useSelector((state: RootState) => state.pokemonsListReducer.pokemonsListLoading)
   const pokemonsListError = useSelector((state: RootState) => state.pokemonsListReducer.pokemonsListError)
+  const pokemonsListRequest = useSelector((state: RootState) => state.pokemonsListReducer.pokemonsListRequestResult)
 
   React.useEffect(() => {
     dispatch(actionFetchPokemonList())
   }, [dispatch])
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const rect = document.body.getBoundingClientRect()
+      if (
+        !isNextPageLoading &&
+        rect.bottom - window.innerHeight < SCROLL_OFFSET &&
+        pokemonsListRequest
+      ) {
+        setIsNextPageLoading(true)
+        new Promise((resolve) => {
+          resolve(dispatch(actionFetchPokemonList({url: pokemonsListRequest.next})))
+        })
+          .finally(() => setIsNextPageLoading(false))
+      }
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => {
+      window.addEventListener('scroll', handleScroll)
+    }
+  }, [dispatch, pokemonsListRequest, isNextPageLoading])
 
   if (!pokemonsList.length && pokemonsListIsLoading) {
     return (

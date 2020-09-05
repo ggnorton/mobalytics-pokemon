@@ -12,7 +12,6 @@ import Header from "./components/Header/Header";
 function App() {
   return (
     <Router>
-      <div>
         <Header />
         <Switch>
           <Route path="/:id">
@@ -22,7 +21,6 @@ function App() {
             <PokemonsList />
           </Route>
         </Switch>
-      </div>
     </Router>
   );
 }
