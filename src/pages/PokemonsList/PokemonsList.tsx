@@ -1,12 +1,11 @@
-import React, {useState} from 'react'
+import React from 'react'
 import {useDispatch, useSelector} from 'react-redux'
 import cn from 'classnames'
 import style from './PokemonsList.module.scss'
 import {actionFetchPokemonList} from "../../redux/pokemonsList/actions";
 import {RootState} from "../../redux/store";
 import PokemonCard from "../../components/PokemonCard/PokemonCard";
-
-const SCROLL_OFFSET = 100
+import { AsinEntitiesListFunctional } from '../../components/AsyncEntitiesList/AsyncEntitiesList';
 
 interface Props {
   className?: string;
@@ -14,7 +13,6 @@ interface Props {
 
 const PokemonsList: React.FC<Props> = ({ className }) => {
   const dispatch = useDispatch()
-  const [isNextPageLoading, setIsNextPageLoading] = useState(false)
   const pokemonsList = useSelector((state: RootState) => state.pokemonsListReducer.pokemonsList)
   const pokemonsListIsLoading = useSelector((state: RootState) => state.pokemonsListReducer.pokemonsListLoading)
   const pokemonsListError = useSelector((state: RootState) => state.pokemonsListReducer.pokemonsListError)
@@ -23,27 +21,6 @@ const PokemonsList: React.FC<Props> = ({ className }) => {
   React.useEffect(() => {
     dispatch(actionFetchPokemonList())
   }, [dispatch])
-
-  React.useEffect(() => {
-    const handleScroll = () => {
-      const rect = document.body.getBoundingClientRect()
-      if (
-        !isNextPageLoading &&
-        rect.bottom - window.innerHeight < SCROLL_OFFSET &&
-        pokemonsListRequest
-      ) {
-        setIsNextPageLoading(true)
-        new Promise((resolve) => {
-          resolve(dispatch(actionFetchPokemonList({url: pokemonsListRequest.next})))
-        })
-          .finally(() => setIsNextPageLoading(false))
-      }
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => {
-      window.addEventListener('scroll', handleScroll)
-    }
-  }, [dispatch, pokemonsListRequest, isNextPageLoading])
 
   if (!pokemonsList.length && pokemonsListIsLoading) {
     return (
@@ -61,13 +38,22 @@ const PokemonsList: React.FC<Props> = ({ className }) => {
     <div className={cn(style.root, className)}>
       <h1>Самый полный список покемонов</h1>
       <h3>Самый полный список покемонов специально для mobalytics</h3>
+      <AsinEntitiesListFunctional {...{
+           nextPage: pokemonsListRequest?.next,
+           nextPageAction: () => dispatch(actionFetchPokemonList({url: pokemonsListRequest?.next || null})),
+           isLoading: pokemonsListIsLoading,
+           scrollContainer: document.body
+         }}>
        <div className={style.list}>
+         
          {
            pokemonsList.map((item) => (
               <PokemonCard data={item} key={item.id} />
            ))
          }
+         
        </div>
+       </AsinEntitiesListFunctional>
     </div>
   )
 }
